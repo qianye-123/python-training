@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .wood-texture {
+        background-image: 
+            repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(139, 90, 43, 0.03) 50px, rgba(139, 90, 43, 0.03) 51px),
+            repeating-linear-gradient(0deg, transparent, transparent 30px, rgba(139, 90, 43, 0.02) 30px, rgba(139, 90, 43, 0.02) 31px);
+    }
+    
+    .order-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .order-status {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .order-status.finished {
+        background-color: rgba(148, 180, 159, 0.15);
+        color: #4A7C59;
+    }
+    
+    .order-status.unfinished {
+        background-color: rgba(247,160,114,0.15);
+        color: #F7A072;
+    }
+    
+    .order-items {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    
+    .order-item {
+        background-color: #FFF8EF;
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        font-size: 0.85rem;
+    }
+    
+    .price-tag {
+        color: #F7A072;
+        font-weight: 600;
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-title-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #F7A072 0%, #E88F5D 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+    }
+</style>
+
+<section class="py-12 wood-texture">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-title-icon"><i class="bi bi-list"></i></div>
+            <div>
+                <h2 class="text-2xl font-bold text-[#4A403A]">历史订单</h2>
+                <p class="text-sm text-[#88807A]">查看您的所有订单记录</p>
+            </div>
+        </div>
+
+        {% if orders %}
+        {% for order in orders %}
+        <div class="order-card">
+            <div class="order-header">
+                <div>
+                    <span class="text-sm text-[#88807A]">订单号：{{ order.id }}</span>
+                    <p class="text-xs text-[#88807A] mt-1">{{ order.order_date }}</p>
+                </div>
+                <span class="order-status {% if order.is_finish %}finished{% else %}unfinished{% endif %}">
+                    {% if order.is_finish %}已采购{% else %}待采购{% endif %}
+                </span>
+            </div>
+            
+            <div class="order-items">
+                {% for item in order.orderitem_set.all %}
+                <span class="order-item">{{ item.goods_name }} x{{ item.buy_num }}</span>
+                {% endfor %}
+            </div>
+            
+            <div class="mt-2 d-flex justify-between align-items-center">
+                <span class="text-sm text-[#88807A]">用餐时间：{{ order.eat_time }}</span>
+                <a href="{% url 'order_detail' order.id %}" class="btn btn-primary btn-sm">查看详情</a>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="card text-center py-12">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">📋</div>
+            <p class="text-[#88807A]">暂无订单记录</p>
+            <a href="{% url 'index' %}#dishes" class="btn btn-primary mt-4">去点餐</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

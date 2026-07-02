@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>编辑库存</h2>
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="material_id" class="form-label">选择食材</label>
+        <select class="form-select" id="material_id" name="material_id" required>
+            {% for m in materials %}
+            <option value="{{ m.id }}" {% if stock.material.id == m.id %}selected{% endif %}>{{ m.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="stock_num" class="form-label">剩余库存数量</label>
+        <input type="number" class="form-control" id="stock_num" name="stock_num" step="0.1" value="{{ stock.stock_num }}" required>
+    </div>
+    <div class="mb-3">
+        <label for="tip" class="form-label">过期备注</label>
+        <input type="text" class="form-control" id="tip" name="tip" value="{{ stock.tip }}">
+    </div>
+    <button type="submit" class="btn btn-primary">保存</button>
+</form>
+{% endblock %}

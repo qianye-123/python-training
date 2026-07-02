@@ -1,0 +1,1 @@
+web: gunicorn jiawei.wsgi:application

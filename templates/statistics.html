@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card food-card mb-6">
+    <div class="card-header" style="background-color: rgba(247,160,114,0.05);">
+        <h2 class="h4 font-bold text-[#4A403A]">消费统计</h2>
+    </div>
+    <div class="card-body">
+        <form method="get" class="mb-6">
+            <div class="row">
+                <div class="col-md-2">
+                    <label class="form-label">筛选模式</label>
+                    <select class="form-select" name="mode" onchange="updateDateInputs()">
+                        <option value="week" {% if mode == 'week' %}selected{% endif %}>本周</option>
+                        <option value="month" {% if mode == 'month' %}selected{% endif %}>本月</option>
+                        <option value="year" {% if mode == 'year' %}selected{% endif %}>本年</option>
+                        <option value="custom" {% if mode == 'custom' %}selected{% endif %}>自定义</option>
+                    </select>
+                </div>
+                <div class="col-md-2" id="year-select">
+                    <label class="form-label">年份</label>
+                    <select class="form-select" name="year">
+                        {% for y in years %}
+                        <option value="{{ y }}" {% if year == y %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2" id="month-select">
+                    <label class="form-label">月份</label>
+                    <select class="form-select" name="month">
+                        {% for m in months %}
+                        <option value="{{ m }}" {% if month == m %}selected{% endif %}>{{ m }}月</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2" id="week-select">
+                    <label class="form-label">周</label>
+                    <select class="form-select" name="week">
+                        {% for w in weeks %}
+                        <option value="{{ w }}" {% if week == w %}selected{% endif %}>第{{ w }}周</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2" id="start-date-select">
+                    <label class="form-label">开始日期</label>
+                    <input type="date" class="form-control" name="start_date" value="{{ start_date }}">
+                </div>
+                <div class="col-md-2" id="end-date-select">
+                    <label class="form-label">结束日期</label>
+                    <input type="date" class="form-control" name="end_date" value="{{ end_date }}">
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-primary">查询</button>
+                    <a href="{% url 'statistics' %}" class="btn btn-outline-primary">重置</a>
+                </div>
+            </div>
+        </form>
+
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center p-3">
+                    <p class="text-xs text-[#88807A] mb-1">总计花费</p>
+                    <p class="text-xl font-bold text-[#F7A072]">¥{{ total_cost }}</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center p-3">
+                    <p class="text-xs text-[#88807A] mb-1">订单数量</p>
+                    <p class="text-xl font-bold text-[#94B49F]">{{ orders|length }}</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center p-3">
+                    <p class="text-xs text-[#88807A] mb-1">日均消费</p>
+                    <p class="text-xl font-bold text-[#4A403A]">¥{{ avg_daily_cost }}</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center p-3">
+                    <p class="text-xs text-[#88807A] mb-1">食材采购</p>
+                    <p class="text-xl font-bold text-[#4A7C59]">¥{{ category_stats.食材采购 }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header px-3 py-2" style="background-color: rgba(247,160,114,0.05);">
+                        <h3 class="h6 font-bold text-[#4A403A]">消费趋势</h3>
+                    </div>
+                    <div class="card-body p-2">
+                        <canvas id="consumptionChart" height="120"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header px-3 py-2" style="background-color: rgba(247,160,114,0.05);">
+                        <h3 class="h6 font-bold text-[#4A403A]">按类别统计</h3>
+                    </div>
+                    <div class="card-body p-2">
+                        <canvas id="categoryChart" height="120"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header px-4 py-2" style="background-color: rgba(247,160,114,0.05);">
+                        <h3 class="h6 font-bold text-[#4A403A]">按用餐时段统计</h3>
+                    </div>
+                    <div class="card-body p-3">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th class="py-1">时段</th>
+                                    <th class="py-1">花费</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for time, cost in eat_time_stats.items %}
+                                <tr>
+                                    <td class="py-1">{{ time }}</td>
+                                    <td class="py-1">¥{{ cost }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header px-4 py-2" style="background-color: rgba(247,160,114,0.05);">
+                        <h3 class="h6 font-bold text-[#4A403A]">每日消费明细</h3>
+                    </div>
+                    <div class="card-body p-3">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th class="py-1">日期</th>
+                                    <th class="py-1">消费金额</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for day in daily_stats %}
+                                <tr>
+                                    <td class="py-1">{{ day.date }}</td>
+                                    <td class="py-1">¥{{ day.total }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header px-4 py-2" style="background-color: rgba(247,160,114,0.05);">
+                <h3 class="h6 font-bold text-[#4A403A]">订单列表</h3>
+            </div>
+            <div class="card-body p-3">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>订单号</th>
+                            <th>日期</th>
+                            <th>金额</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td><a href="{% url 'order_detail' order.id %}">{{ order.id }}</a></td>
+                            <td>{{ order.order_date }}</td>
+                            <td>¥{{ order.total_cost }}</td>
+                            <td>{% if order.is_finish %}<span class="badge bg-success">已采购</span>{% else %}<span class="badge bg-warning">未采购</span>{% endif %}</td>
+                            <td><a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-primary">详情</a></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center text-muted">暂无订单</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    function updateDateInputs() {
+        const mode = document.querySelector('select[name="mode"]').value;
+        const yearSelect = document.getElementById('year-select');
+        const monthSelect = document.getElementById('month-select');
+        const weekSelect = document.getElementById('week-select');
+        const startDateSelect = document.getElementById('start-date-select');
+        const endDateSelect = document.getElementById('end-date-select');
+        
+        yearSelect.style.display = 'none';
+        monthSelect.style.display = 'none';
+        weekSelect.style.display = 'none';
+        startDateSelect.style.display = 'none';
+        endDateSelect.style.display = 'none';
+        
+        if (mode === 'week' || mode === 'month' || mode === 'year') {
+            yearSelect.style.display = 'block';
+            if (mode === 'month' || mode === 'week') {
+                monthSelect.style.display = 'block';
+            }
+            if (mode === 'week') {
+                weekSelect.style.display = 'block';
+            }
+        } else {
+            startDateSelect.style.display = 'block';
+            endDateSelect.style.display = 'block';
+        }
+    }
+    
+    updateDateInputs();
+    
+    const dailyStats = {{ daily_stats|safe }};
+    const mode = '{{ mode }}';
+    const ctx1 = document.getElementById('consumptionChart');
+    
+    if (ctx1) {
+        let labels = dailyStats.map(item => item.date);
+        
+        if (mode === 'year') {
+            labels = dailyStats.map(item => {
+                const date = item.date;
+                return date.substring(5, 7) + '月';
+            });
+        } else if (mode === 'month') {
+            labels = dailyStats.map(item => {
+                const date = item.date;
+                return date.substring(8, 10) + '日';
+            });
+        } else if (mode === 'week') {
+            labels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+        }
+        
+        new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '消费金额 (¥)',
+                    data: dailyStats.map(item => item.total),
+                    backgroundColor: 'rgba(247, 160, 114, 0.6)',
+                    borderColor: 'rgba(247, 160, 114, 1)',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+    
+    const categoryStats = {{ category_stats|safe }};
+    const ctx2 = document.getElementById('categoryChart');
+    if (ctx2) {
+        new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(categoryStats),
+                datasets: [{
+                    data: Object.values(categoryStats),
+                    backgroundColor: ['rgba(247, 160, 114, 0.8)', 'rgba(148, 180, 159, 0.8)', 'rgba(66, 133, 244, 0.8)'],
+                    borderWidth: 0,
+                    cutout: '65%'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { 
+                        position: 'bottom',
+                        labels: {
+                            font: { size: 10 },
+                            padding: 8
+                        }
+                    } 
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}
