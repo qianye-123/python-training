@@ -19,7 +19,7 @@ if RAILWAY_HOST:
 
 # 关键：信任Railway域名，解决注册/登录表单403拦截
 CSRF_TRUSTED_ORIGINS = [
-    "https://python-training-production-ddf4.up.railway.app"
+    "https://jiawei-order.up.railway.app"
 ]
 # 适配Railway反向代理HTTPS，Cookie正常写入
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
