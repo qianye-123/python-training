@@ -1,1 +1,0 @@
-import os; from pathlib import Path; BASE_DIR = Path(__file__).resolve().parent; print(os.path.exists(os.path.join(BASE_DIR, 'templates', 'index.html'))); print(os.path.abspath(os.path.join(BASE_DIR, 'templates', 'index.html')))
