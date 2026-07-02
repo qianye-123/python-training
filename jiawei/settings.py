@@ -10,12 +10,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-k-czieu5-9s^e!@!)cya7z=@+)^e+(_=dp(%tz)ye^w6*%@q$6')
 
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-RAILWAY_HOST = os.environ.get('RAILWAY_HOST', '')
-if RAILWAY_HOST:
-    ALLOWED_HOSTS.append(RAILWAY_HOST)
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,*').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
