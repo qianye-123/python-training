@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>添加饮品</h2>
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="name" class="form-label">饮品名称</label>
+        <input type="text" class="form-control" id="name" name="name" required>
+    </div>
+    <div class="mb-3">
+        <label for="spec" class="form-label">规格</label>
+        <input type="text" class="form-control" id="spec" name="spec" placeholder="如250ml/1L">
+    </div>
+    <div class="mb-3">
+        <label for="price" class="form-label">单品售价</label>
+        <input type="number" class="form-control" id="price" name="price" step="0.1" required>
+    </div>
+    <div class="mb-3 form-check">
+        <input type="checkbox" class="form-check-input" id="is_lactose" name="is_lactose">
+        <label class="form-check-label" for="is_lactose">是否含乳糖</label>
+    </div>
+    <button type="submit" class="btn btn-primary">保存</button>
+</form>
+{% endblock %}

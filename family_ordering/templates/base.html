@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家味 - 家庭智能点餐与食材采购核算系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #F7A072;
+            --bg-color: #FFF8EF;
+            --green-color: #94B49F;
+            --danger-color: #E07272;
+            --text-color: #4A403A;
+            --text-light: #88807A;
+        }
+        
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Source Han Sans SC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #FFF8EF 0%, #FFFFFF 100%);
+            box-shadow: 0 2px 10px rgba(247, 160, 114, 0.1);
+            padding: 0.75rem 2rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            border-bottom: 1px solid rgba(247, 160, 114, 0.15);
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .navbar-brand i {
+            font-size: 1.8rem;
+        }
+        
+        .nav-link {
+            color: var(--text-color);
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            margin: 0 0.25rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary-color);
+            background-color: rgba(247, 160, 114, 0.15);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+            border-radius: 25px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #E88F5D;
+            border-color: #E88F5D;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(247, 160, 114, 0.3);
+        }
+        
+        .btn-outline-primary {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            border-radius: 25px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(74, 64, 58, 0.05);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(247, 160, 114, 0.15);
+        }
+        
+        .badge-success {
+            background-color: var(--green-color);
+            color: white;
+            border-radius: 15px;
+            font-weight: normal;
+        }
+        
+        .badge-danger {
+            background-color: var(--danger-color);
+            color: white;
+            border-radius: 15px;
+            font-weight: normal;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 12px;
+            border: 1px solid rgba(74, 64, 58, 0.1);
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(247, 160, 114, 0.15);
+        }
+        
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            display: none;
+        }
+        
+        .drawer-overlay.show {
+            display: block;
+        }
+        
+        .drawer-menu {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 300px;
+            height: 100vh;
+            background-color: white;
+            z-index: 2001;
+            padding: 1.5rem;
+            transition: left 0.3s ease;
+            box-shadow: 5px 0 20px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+        
+        .drawer-menu.show {
+            left: 0;
+        }
+        
+        .drawer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(74, 64, 58, 0.1);
+        }
+        
+        .drawer-nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            color: var(--text-color);
+            text-decoration: none;
+            border-radius: 12px;
+            margin-bottom: 0.25rem;
+            transition: all 0.2s ease;
+        }
+        
+        .drawer-nav-item:hover {
+            background-color: rgba(247, 160, 114, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .drawer-nav-item i {
+            width: 24px;
+            margin-right: 12px;
+            color: var(--primary-color);
+        }
+        
+        .footer {
+            background-color: var(--text-color);
+            color: #FFF8EF;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 4rem;
+        }
+        
+        @media (max-width: 992px) {
+            .navbar-nav {
+                display: none;
+            }
+            
+            .header-right {
+                display: none;
+            }
+            
+            .navbar {
+                padding: 0.75rem 1rem;
+            }
+        }
+        
+        @media (min-width: 993px) {
+            .mobile-menu-btn {
+                display: none;
+            }
+            
+            .drawer-overlay {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-house-heart"></i>
+                <span>家味</span>
+            </a>
+            
+            <button class="mobile-menu-btn navbar-toggler" type="button" onclick="toggleDrawer()">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse justify-content-center">
+                <ul class="navbar-nav" style="width: 100%; max-width: 800px; display: flex; justify-content: space-around;">
+                    <li class="nav-item text-center">
+                        <a class="nav-link d-block" href="/">首页</a>
+                    </li>
+                    <li class="nav-item text-center">
+                        <a class="nav-link d-block" href="/#dishes">菜品库</a>
+                    </li>
+                    <li class="nav-item text-center">
+                        <a class="nav-link d-block" href="/#fruits">水果</a>
+                    </li>
+                    <li class="nav-item text-center">
+                        <a class="nav-link d-block" href="/#drinks">饮品</a>
+                    </li>
+                    {% if user.is_authenticated %}
+                    <li class="nav-item text-center">
+                        <a class="nav-link d-block" href="/ai_recommend/">AI三餐</a>
+                    </li>
+                    <li class="nav-item text-center">
+                        <a class="nav-link d-block" href="/#cart">点餐清单</a>
+                    </li>
+                    <li class="nav-item text-center">
+                        <a class="nav-link d-block" href="/#stocks">食材库存</a>
+                    </li>
+                    <li class="nav-item text-center">
+                        <a class="nav-link d-block" href="/#statistics">消费统计</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+            
+            <div class="header-right">
+                {% if user.is_authenticated %}
+                <a href="{% url 'profile' %}" class="nav-link" style="padding: 0.5rem;">
+                    <i class="bi bi-person"></i> 个人中心
+                </a>
+                <a href="{% url 'logout' %}" class="btn btn-outline-primary">退出登录</a>
+                {% else %}
+                <button onclick="showModal('login')" class="btn btn-outline-primary">登录</button>
+                <button onclick="showModal('register')" class="btn btn-primary">注册</button>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="drawer-overlay" onclick="toggleDrawer()"></div>
+    <div class="drawer-menu">
+        <div class="drawer-header">
+            <div class="navbar-brand">
+                <i class="bi bi-house-heart"></i>
+                <span>家味</span>
+            </div>
+            <button class="btn-close" onclick="toggleDrawer()"></button>
+        </div>
+        
+        <div class="drawer-nav">
+            <a class="drawer-nav-item" href="#top" onclick="toggleDrawer()">
+                <i class="bi bi-house"></i>首页
+            </a>
+            <a class="drawer-nav-item" href="#dishes" onclick="toggleDrawer()">
+                <i class="bi bi-utensils"></i>菜品库
+            </a>
+            <a class="drawer-nav-item" href="#fruits" onclick="toggleDrawer()">
+                <i class="bi bi-apple"></i>水果
+            </a>
+            <a class="drawer-nav-item" href="#drinks" onclick="toggleDrawer()">
+                <i class="bi bi-cup-soda"></i>饮品
+            </a>
+            
+            {% if user.is_authenticated %}
+            <hr class="my-3">
+            <a class="drawer-nav-item" href="#ai-recommend" onclick="toggleDrawer()">
+                <i class="bi bi-brain"></i>AI三餐推荐
+            </a>
+            <a class="drawer-nav-item" href="#cart" onclick="toggleDrawer()">
+                <i class="bi bi-cart"></i>点餐清单
+            </a>
+            <a class="drawer-nav-item" href="#stocks" onclick="toggleDrawer()">
+                <i class="bi bi-box-seam"></i>食材库存
+            </a>
+            <a class="drawer-nav-item" href="#statistics" onclick="toggleDrawer()">
+                <i class="bi bi-bar-chart"></i>消费统计
+            </a>
+            <a class="drawer-nav-item" href="{% url 'profile' %}" onclick="toggleDrawer()">
+                <i class="bi bi-person"></i>个人中心
+            </a>
+            <hr class="my-3">
+            <a class="drawer-nav-item" href="{% url 'logout' %}">
+                <i class="bi bi-box-arrow-right"></i>退出登录
+            </a>
+            {% else %}
+            <hr class="my-3">
+            <a class="drawer-nav-item" href="#login" onclick="toggleDrawer()">
+                <i class="bi bi-box-arrow-in-right"></i>登录
+            </a>
+            <a class="drawer-nav-item" href="#register" onclick="toggleDrawer()">
+                <i class="bi bi-person-plus"></i>注册
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <main class="container-fluid" style="padding-top: 100px;">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" style="margin: 1rem;">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+        {% block footer %}{% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleDrawer() {
+            document.querySelector('.drawer-overlay').classList.toggle('show');
+            document.querySelector('.drawer-menu').classList.toggle('show');
+        }
+        
+        function showModal(type) {
+            const modal = document.getElementById(`${type}-modal`);
+            if (modal) {
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

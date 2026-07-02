@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>水果列表</h2>
+    {% if user.is_authenticated %}
+    <a href="{% url 'fruit_add' %}" class="btn btn-primary">添加水果</a>
+    {% endif %}
+</div>
+
+<div class="row">
+    {% for item in fruits %}
+    <div class="col-md-4 col-sm-6 mb-4">
+        <div class="card">
+            {% if item.fruit.image %}
+            <img src="{{ MEDIA_URL }}{{ item.fruit.image }}" class="card-img-custom" alt="{{ item.fruit.name }}">
+            {% else %}
+            <div class="card-img-custom bg-gray-200 d-flex align-items-center justify-content-center">
+                <span class="text-gray-400">暂无图片</span>
+            </div>
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ item.fruit.name }}</h5>
+                {% if item.fruit.is_allergy %}
+                <span class="badge bg-warning">易过敏</span>
+                {% endif %}
+                {% if item.has_allergy %}
+                <span class="badge bg-danger">您的忌口食材</span>
+                {% endif %}
+                <p class="card-text">参考价: ¥{{ item.fruit.base_price }}</p>
+                <p class="card-text text-sm">{{ item.fruit.store_tip|truncatechars:50 }}</p>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'fruit_detail' item.fruit.id %}" class="btn btn-outline-primary btn-sm">详情</a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'fruit_edit' item.fruit.id %}" class="btn btn-outline-secondary btn-sm">编辑</a>
+                    <a href="{% url 'fruit_delete' item.fruit.id %}" class="btn btn-outline-danger btn-sm" onclick="return confirm('确定删除？')">删除</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p class="text-muted">暂无水果</p>
+    {% endfor %}
+</div>
+{% endblock %}

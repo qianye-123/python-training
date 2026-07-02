@@ -1,0 +1,58 @@
+{% if cart_items %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>商品名称</th>
+            <th>类型</th>
+            <th>用餐时段</th>
+            <th>份数</th>
+            <th>忌口提示</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in cart_items %}
+        <tr>
+            <td>{{ item.obj.name }}</td>
+            <td>
+                {% if item.item.goods_type == 'dish' %}菜品{% elif item.item.goods_type == 'fruit' %}水果{% elif item.item.goods_type == 'drink' %}饮品{% endif %}
+            </td>
+            <td>{{ item.item.eat_time }}</td>
+            <td>{{ item.item.buy_num }}</td>
+            <td>
+                {% if item.has_taboo %}
+                <span class="badge bg-danger">含忌口食材</span>
+                {% else %}
+                <span class="badge bg-success">安全</span>
+                {% endif %}
+            </td>
+            <td>
+                <form method="post" action="{% url 'remove_from_cart' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="goods_type" value="{{ item.item.goods_type }}">
+                    <input type="hidden" name="goods_id" value="{{ item.item.goods_id }}">
+                    <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="d-flex justify-content-between mt-4">
+    <form method="post" action="{% url 'clear_cart' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">清空清单</button>
+    </form>
+    <div>
+        <a href="{% url 'summary' %}" class="btn btn-primary">食材汇总</a>
+        <a href="{% url 'generate_purchase_text' %}" class="btn btn-outline-primary">生成采购文本</a>
+    </div>
+</div>
+{% else %}
+<div class="card text-center py-8">
+    <h3>点餐清单为空</h3>
+    <p class="text-muted">快去选择喜欢的菜品吧！</p>
+    <a href="#dishes" class="btn btn-primary mt-3">浏览菜品</a>
+</div>
+{% endif %}
